@@ -10,4 +10,4 @@ RUN git clone https://github.com/Rafallost/snake-game.git app/input
 
 WORKDIR /src/app/input
 
-CMD ["go", "build", "-v", "-o", "/src/app/input"]
+CMD ["sh", "-c", "go build -v -o /app/output/app  > /app/output/build.log 2>&1"]

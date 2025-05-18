@@ -2,4 +2,4 @@ FROM snake
 
 WORKDIR /src/app/input
 
-CMD ["make", "test"]
+CMD ["sh", "-c", "make test  > /app/output/test.log 2>&1"]

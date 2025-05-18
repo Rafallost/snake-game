@@ -7,14 +7,19 @@ pipeline {
   stages {
     stage('Init') {
       steps {
-        // Utworzenie katalogów na logi i input
         sh 'mkdir -p repo_input repo_output'
       }
     }
 
     stage('Checkout') {
       steps {
-        checkout scm
+        // Pobieramy repo do podkatalogu repo_input
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: '*/master']],
+          userRemoteConfigs: [[url: 'https://github.com/Rafallost/snake-game.git']],
+          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'repo_input']]
+        ])
       }
     }
 
@@ -26,19 +31,13 @@ pipeline {
 
     stage('Run Builder') {
       steps {
-        sh '''
-          docker-compose run --rm builder \
-            > repo_output/build.log 2>&1
-        '''
+        sh 'docker-compose run --rm builder'
       }
     }
 
     stage('Run Tester') {
       steps {
-        sh '''
-          docker-compose run --rm tester \
-            > repo_output/test.log 2>&1
-        '''
+        sh 'docker-compose run --rm tester'
       }
     }
 

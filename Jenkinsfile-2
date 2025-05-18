@@ -42,7 +42,7 @@ pipeline {
     stage('Archive Logs') {
       steps {
         // Pobranie logów z wolumenu repo_output
-        sh 'cp repo_output/*.log .'
+        sh 'cp /src/app/output/*.log .'
         archiveArtifacts artifacts: '*.log', fingerprint: true
       }
     }

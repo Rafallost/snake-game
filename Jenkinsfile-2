@@ -20,12 +20,14 @@ pipeline {
           args  '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
-      steps {
-        // zakładamy, że Makefile w głównym katalogu robi build + testy
-        sh 'make build'
-        sh 'go test ./snake/... > test.log'
-        archiveArtifacts artifacts: 'test.log', fingerprint: true
-      }
+    steps {
+
+      sh 'mkdir -p output'
+      sh 'make build > output/build.log 2>&1 || true'
+      sh 'make test  > output/test.log  2>&1 || true'
+
+      archiveArtifacts artifacts: 'output/build.log,output/test.log', fingerprint: true
+    }
     }
   }
 

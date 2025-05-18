@@ -1,5 +1,5 @@
 # bazujemy na obrazie, w którym są już Go, git, make itd.
-FROM dependencies:1.0
+FROM rafal206/dependencies:1.0
 
 # ustalamy katalog roboczy wewnątrz kontenera
 WORKDIR /workspace

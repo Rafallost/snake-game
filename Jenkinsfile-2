@@ -5,7 +5,7 @@ pipeline {
     stage('Build App') {
       agent {
         docker {
-          image 'dependencies:1.0'
+          image 'rafal206/dependencies:1.0'
           args  '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }

@@ -1,0 +1,13 @@
+FROM golang:alpine
+
+WORKDIR /src
+RUN apk update && apk add --no-cache git make
+
+RUN mkdir -p /app/input /app/output
+VOLUME ["/app/input", "/app/output"]
+
+RUN git clone https://github.com/Rafallost/snake-game.git app/input
+
+WORKDIR /src/app/input
+
+CMD ["go", "build", "-v", "-o", "/src/app/input"]

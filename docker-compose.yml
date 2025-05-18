@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.2
+    image: snake
+    volumes:
+      - repo_input:/src/app/input
+      - repo_output:/src/app/output
+
+  tester:
+    build:
+      context: .
+      dockerfile: Dockerfile.3
+    image: snake_tests
+    depends_on:
+      - builder
+    volumes:
+      - repo_input:/src/app/input
+      - repo_output:/src/app/output
+
+volumes:
+  repo_input:
+  repo_output:

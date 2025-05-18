@@ -1,0 +1,56 @@
+pipeline {
+  agent any
+
+  environment {
+    // Definiujemy nazwę projektu Compose, aby uniknąć konfliktów
+    COMPOSE_PROJECT_NAME = "snakeproject"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        // Pobranie kodu i plików konfiguracyjnych z repo
+        checkout scm
+      }
+    }
+
+    stage('Build Images') {
+      steps {
+        sh 'docker-compose build builder tester'
+      }
+    }
+
+    stage('Run Builder') {
+      steps {
+        sh 'docker-compose run --rm builder'
+      }
+    }
+
+    stage('Run Tester') {
+      steps {
+        sh 'docker-compose run --rm tester'
+      }
+    }
+
+    stage('Teardown') {
+      steps {
+        // Sprzątanie zasobów Compose
+        sh 'docker-compose down'
+      }
+    }
+
+    stage('Archive Logs') {
+      steps {
+        // Pobranie logów z wolumenu repo_output
+        sh 'cp repo_output/*.log .'
+        archiveArtifacts artifacts: '*.log', fingerprint: true
+      }
+    }
+  }
+
+  post {
+    always {
+      echo "Pipeline zakończony – logi dostępne jako artefakty"
+    }
+  }
+}

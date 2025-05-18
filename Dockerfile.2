@@ -1,13 +1,16 @@
-FROM golang:alpine
+# Dockerfile.2 - builder
+FROM golang:1.20-alpine
+LABEL maintainer="Twoje Imię <email@domena>"
 
-WORKDIR /src
+WORKDIR /app
 RUN apk update && apk add --no-cache git make
 
-RUN mkdir -p /app/input /app/output
+# Utworzenie katalogów i punktów montowania
+RUN mkdir -p input output
 VOLUME ["/app/input", "/app/output"]
 
-RUN git clone https://github.com/Rafallost/snake-game.git app/input
+# Klonowanie kodu do input
+RUN git clone https://github.com/Rafallost/snake-game.git input
 
-WORKDIR /src/app/input
-
-CMD ["sh", "-c", "go build -v -o /app/output/app  > /app/output/build.log 2>&1"]
+# Domyślna komenda: budowa i zapis logów
+CMD ["sh", "-c", "cd input && go build -v -o /app/output/snake 2>&1 | tee /app/output/build.log"]

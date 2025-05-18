@@ -5,22 +5,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.2
-    image: snake
+    image: snake-builder:1.0
     volumes:
-      - repo_input:/src/app/input
-      - repo_output:/src/app/output
+      - ./repo_input:/app/input
+      - ./repo_output:/app/output
 
   tester:
     build:
       context: .
       dockerfile: Dockerfile.3
-    image: snake_tests
+    image: snake-tester:1.0
     depends_on:
       - builder
     volumes:
-      - repo_input:/src/app/input
-      - repo_output:/src/app/output
-
-volumes:
-  repo_input:
-  repo_output:
+      - ./repo_input:/app/input
+      - ./repo_output:/app/output

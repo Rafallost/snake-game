@@ -1,57 +1,50 @@
 pipeline {
   agent any
-
   environment {
-    // Definiujemy nazwę projektu Compose, aby uniknąć konfliktów
     COMPOSE_PROJECT_NAME = "snakeproject"
   }
 
   stages {
     stage('Checkout') {
       steps {
-        // Pobranie kodu i plików konfiguracyjnych z repo
         checkout scm
       }
     }
 
     stage('Build Images') {
       steps {
-        sh 'docker-compose build builder tester'
+        sh 'docker-compose build'
       }
     }
 
     stage('Run Builder') {
-    steps {
-        // uruchamiamy builder i przekierowujemy jego output do pliku w repo_output
+      steps {
         sh '''
-        docker-compose run --rm builder \
+          docker-compose run --rm builder \
             > repo_output/build.log 2>&1
         '''
-    }
+      }
     }
 
     stage('Run Tester') {
-    steps {
-        // podobnie dla testera
+      steps {
         sh '''
-        docker-compose run --rm tester \
+          docker-compose run --rm tester \
             > repo_output/test.log 2>&1
         '''
-    }
+      }
     }
 
     stage('Teardown') {
       steps {
-        // Sprzątanie zasobów Compose
         sh 'docker-compose down'
       }
     }
 
     stage('Archive Logs') {
-    steps {
-        sh 'cp repo_output/*.log .'
-        archiveArtifacts artifacts: '*.log', fingerprint: true
-    }
+      steps {
+        archiveArtifacts artifacts: 'repo_output/*.log', fingerprint: true
+      }
     }
   }
 

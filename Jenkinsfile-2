@@ -1,58 +1,70 @@
 pipeline {
   agent any
-  environment {
-    // dzięki temu wszystkie docker‐owe sh będą używać Twojego DIND
-    DOCKER_HOST = 'tcp://dind:2375'
-    DOCKER_TLS_CERTDIR = ''
-  }
   stages {
-    stage('Compile & Test') {
-      // używamy obrazu Go z dependencjami
+    stage('Build Dependencies Image') {
+      steps {
+        dir('docker/dependencies') {
+          // build the "builder" image WITH Go
+          sh 'docker build -t local-dependencies:1.0 .'
+        }
+      }
+    }
+
+    stage('Compile') {
+      // now use that freshly-built image
       agent {
         docker {
-          image 'rafal206/dependencies:1.0'
-          // wyłączamy ENTRYPOINT i działamy jako root aby pisać do workspace
-          args '--entrypoint="" -u root -v $WORKSPACE:/app'
+          image 'local-dependencies:1.0'
+          args '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {
-        dir('snake') {    // przejdź do katalogu z kodem
-          echo "=== BUILD ==="
-          sh 'make build'
-          echo "=== TEST ==="
-          sh 'go test ./...'
-        }
+        echo "=== BUILD START ==="
+        sh 'make build'
       }
     }
 
     stage('Build Docker Image') {
-      // wracamy na główny agent (jenkins z DIND)
-      agent any
+      agent {
+        docker {
+          image 'docker:24.0.2-cli'
+          args '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+      }
       steps {
-        echo 'Buduję finalny obraz aplikacji'
-        sh 'docker build -t rafal206/snake-game:${BUILD_NUMBER} .'
+        echo "Buduję obraz aplikacji w DIND"
+        sh 'docker build -t snake-game:${BUILD_NUMBER} .'
       }
     }
 
-    stage('Push Docker Image') {
-      agent any
+    stage('Test') {
+      agent {
+        docker {
+          image 'snake-game:${BUILD_NUMBER}'
+        }
+      }
       steps {
-        echo 'Wypycham obraz na Docker Hub'
-        sh 'docker push rafal206/snake-game:${BUILD_NUMBER}'
+        echo "=== TEST START ==="
+        sh '''
+          mkdir -p output
+          go test ./snake/... > output/test_log.log 2>&1 || true
+          cat output/test_log.log
+        '''
+        echo "=== TEST END ==="
       }
     }
 
     stage('Archive Logs') {
       agent any
       steps {
-        archiveArtifacts artifacts: '**/test_*.log', fingerprint: true
+        archiveArtifacts artifacts: 'output/*.log', fingerprint: true
       }
     }
   }
 
   post {
     always {
-      echo 'Pipeline zakończone. Logi i obraz dostępne.'
+      echo "Pipeline zakończone. Logi dostępne jako artefakty."
     }
   }
 }

@@ -2,27 +2,40 @@ version: "3.7"
 services:
   dind:
     image: docker:24.0.2-dind
+    container_name: dind
+    hostname: dind
     privileged: true
     environment:
       DOCKER_TLS_CERTDIR: ""
     volumes:
       - dind-certs:/certs
       - jenkins-data:/var/jenkins_home
+    networks:
+      - jenkins
+    restart: "unless-stopped"
 
   jenkins:
     build: .
     image: my-jenkins:dind
-    environment:
-      DOCKER_HOST: tcp://dind:2375
-      DOCKER_TLS_CERTDIR: ""
-    depends_on:
-      - dind
+    container_name: jenkins
+    hostname: jenkins
     ports:
       - "8082:8080"
       - "50002:50000"
+    environment:
+      DOCKER_HOST: tcp://dind:2375
+      DOCKER_CERT_PATH: ""
     volumes:
       - jenkins-data:/var/jenkins_home
+    networks:
+      - jenkins
+    depends_on:
+      - dind
+    restart: "unless-stopped"
 
 volumes:
   dind-certs:
   jenkins-data:
+
+networks:
+  jenkins:

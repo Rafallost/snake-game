@@ -28,17 +28,6 @@ pipeline {
       }
     }
 
-    stage('Build & Push Docker Image') {
-      steps {
-        // tutaj już jesteśmy na hoście z dostępem do DIND
-        sh '''
-          docker build -t rafal206/snake-game:${BUILD_NUMBER} .
-          docker push rafal206/snake-game:${BUILD_NUMBER}
-        '''
-      }
-    }
-  }
-
   post {
     always {
       echo "Koniec pipeline, artefakty i obraz dostępne"

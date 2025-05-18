@@ -2,21 +2,23 @@ version: "3.7"
 services:
   dind:
     image: docker:24.0.2-dind
+    container_name: dind           # ← to sprawi, że DNS 'dind' i nazwa kontenera będą zgodne
+    hostname: dind                 # ← dodatkowo wpisze 'dind' do /etc/hosts wewnątrz kontenera
     privileged: true
     environment:
       DOCKER_TLS_CERTDIR: ""
     volumes:
       - dind-certs:/certs
       - jenkins-data:/var/jenkins_home
+    networks:
+      - jenkins
 
   jenkins:
-    build: .
     image: my-jenkins:dind
-    ports:
-      - "8082:8080"
-      - "50002:50000"
+    depends_on:
+      - dind
     environment:
-      DOCKER_HOST: tcp://dind:2375
+      DOCKER_HOST: tcp://dind:2375  # teraz 'dind' się rozpozna
       DOCKER_CERT_PATH: ""
     volumes:
       - jenkins-data:/var/jenkins_home

@@ -7,8 +7,7 @@ services:
       DOCKER_TLS_CERTDIR: ""
     volumes:
       - dind-certs:/certs
-    networks:
-      - jenkins
+      - jenkins-data:/var/jenkins_home
 
   jenkins:
     build: .
@@ -25,11 +24,11 @@ services:
       - jenkins
     depends_on:
       - dind
-    restart: unless-stopped
+    restart:
+      - unless-stopped
 
 volumes:
   dind-certs:
   jenkins-data:
-
 networks:
   jenkins:

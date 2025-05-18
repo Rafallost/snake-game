@@ -26,14 +26,19 @@ pipeline {
             steps {
                 sh '''
                     mkdir -p output
-                    make build > output/build_log.txt 2>&1
+                    echo "=== BUILD START ===" > output/build_log.txt
+                    make build >> output/build_log.txt 2>&1
+                    echo "=== BUILD END ===" >> output/build_log.txt
                 '''
             }
         }
-
         stage('Test') {
             steps {
-                sh 'make test > output/test_log.txt 2>&1'
+                sh '''
+                    echo "=== TEST START ===" > output/test_log.txt
+                    make test >> output/test_log.txt 2>&1
+                    echo "=== TEST END ===" >> output/test_log.txt
+                '''
             }
         }
 

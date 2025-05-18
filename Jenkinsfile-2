@@ -1,18 +1,26 @@
 pipeline {
-  agent none
-
+  agent any
   stages {
-    stage('Build App') {
+    stage('Build Dependencies Image') {
+      steps {
+        dir('docker/dependencies') {
+          // build the "builder" image WITH Go
+          sh 'docker build -t local-dependencies:1.0 .'
+        }
+      }
+    }
+
+    stage('Compile') {
+      // now use that freshly-built image
       agent {
         docker {
-          image 'rafal206/dependencies:1.0'
+          image 'local-dependencies:1.0'
           args  '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {
         echo "=== BUILD START ==="
         sh 'make build'
-        echo "=== BUILD END ==="
       }
     }
 

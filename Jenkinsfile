@@ -2,46 +2,51 @@ pipeline {
     agent {
         docker {
             image 'golang:alpine'
-            args '-u root:root'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
-    environment {
-        OUTPUT_DIR = "output"
-    }
+
     stages {
-        stage('Prepare') {
+        stage('Start Trigger') {
+            steps {
+                echo "Rozpoczęcie pipeline – Build #${env.BUILD_NUMBER}"
+            }
+        }
+
+        stage('Prepare Env') {
             steps {
                 sh '''
-                    apk update && apk add --no-cache git make
-                    mkdir -p ${OUTPUT_DIR}
+                    apk add --no-cache git make
+                    mkdir -p output
                 '''
             }
         }
-        stage('Checkout Code') {
-            steps {
-                // UWAGA: tutaj JENKINS automatycznie pobierze repo, NIE wklejamy git clone tutaj
-                echo "Code checked out from GitHub by Jenkins SCM config."
-            }
-        }
+
         stage('Build') {
             steps {
                 sh '''
-                    make > ${OUTPUT_DIR}/build_log.txt 2>&1
-                    go build -o snake
+                    mkdir -p output
+                    make build > output/build_log.txt 2>&1
                 '''
             }
         }
+
         stage('Test') {
             steps {
-                sh '''
-                    make test > ${OUTPUT_DIR}/test_log.txt 2>&1 || true
-                '''
+                sh 'make test > output/test_log.txt 2>&1'
+            }
+        }
+
+        stage('Save Logs') {
+            steps {
+                archiveArtifacts artifacts: 'output/*.log', fingerprint: true
             }
         }
     }
+
     post {
         always {
-            archiveArtifacts artifacts: "${OUTPUT_DIR}/*.txt", fingerprint: true
+            echo "Build zakończony – logi dostępne jako artefakt"
         }
     }
 }

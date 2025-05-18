@@ -1,66 +1,62 @@
 pipeline {
   agent none
-//   agent {
-//   docker {
-//     image 'docker:24-dind'
-//     args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
-//   }
-// }
+
   stages {
-    stage('Start Trigger') {
-      agent { label 'master' }
-      steps {
-        echo "Rozpoczęcie pipeline – Build #${env.BUILD_NUMBER}"
-      }
-    }
-
-    stage('Builder') {
+    stage('Build App') {
       agent {
         docker {
-          image 'myorg/dependencies:1.0'
-          args '-u root:root'
+          image 'dependencies:1.0'
+          args  '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {
-        sh '''
-          echo "=== BUILD START ===" > build.log
-          # przykład dla Node.js
-          npm install >> build.log 2>&1
-          npm run build >> build.log 2>&1
-          echo "=== BUILD END ===" >> build.log
-          cat build.log
-        '''
+        echo "=== BUILD START ==="
+        sh 'make build'
+        echo "=== BUILD END ==="
       }
     }
 
-    stage('Tester') {
+    stage('Build Docker Image') {
       agent {
         docker {
-          image 'myorg/dependencies:1.0'
+          image 'docker:24.0.2-cli'
+          args  '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {
+        echo "Buduję obraz aplikacji w DIND"
+        sh 'docker build -t snake-game:${BUILD_NUMBER} .'
+      }
+    }
+
+    stage('Test') {
+      agent {
+        docker {
+          image 'snake-game:${BUILD_NUMBER}'
+        }
+      }
+      steps {
+        echo "=== TEST START ==="
         sh '''
-          echo "=== TEST START ===" > test.log
-          npm test >> test.log 2>&1 || true
-          echo "=== TEST END ===" >> test.log
-          ls -lh .
-          cat test.log
+          mkdir -p output
+          go test ./snake/... > output/test_log.log 2>&1 || true
+          cat output/test_log.log
         '''
+        echo "=== TEST END ==="
       }
     }
 
     stage('Archive Logs') {
-      agent { label 'master' }
+      agent any
       steps {
-        archiveArtifacts artifacts: '*.log', fingerprint: true
+        archiveArtifacts artifacts: 'output/*.log', fingerprint: true
       }
     }
   }
 
   post {
     always {
-      echo "Pipeline zakończony – logi jako artefakty"
+      echo "Pipeline zakończone. Logi dostępne jako artefakty."
     }
   }
 }

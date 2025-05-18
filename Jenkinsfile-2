@@ -1,70 +1,58 @@
 pipeline {
   agent any
+  environment {
+    // dzięki temu wszystkie docker‐owe sh będą używać Twojego DIND
+    DOCKER_HOST = 'tcp://dind:2375'
+    DOCKER_TLS_CERTDIR = ''
+  }
   stages {
-    stage('Build Dependencies Image') {
-      steps {
-        dir('docker/dependencies') {
-          // build the "builder" image WITH Go
-          sh 'docker build -t local-dependencies:1.0 .'
-        }
-      }
-    }
-
-    stage('Compile') {
-      // now use that freshly-built image
+    stage('Compile & Test') {
+      // używamy obrazu Go z dependencjami
       agent {
         docker {
-          image 'local-dependencies:1.0'
-          args '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
+          image 'rafal206/dependencies:1.0'
+          // wyłączamy ENTRYPOINT i działamy jako root aby pisać do workspace
+          args '--entrypoint="" -u root -v $WORKSPACE:/app'
         }
       }
       steps {
-        echo "=== BUILD START ==="
-        sh 'make build'
+        dir('snake') {    // przejdź do katalogu z kodem
+          echo "=== BUILD ==="
+          sh 'make build'
+          echo "=== TEST ==="
+          sh 'go test ./...'
+        }
       }
     }
 
     stage('Build Docker Image') {
-      agent {
-        docker {
-          image 'docker:24.0.2-cli'
-          args '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
-        }
-      }
+      // wracamy na główny agent (jenkins z DIND)
+      agent any
       steps {
-        echo "Buduję obraz aplikacji w DIND"
-        sh 'docker build -t snake-game:${BUILD_NUMBER} .'
+        echo 'Buduję finalny obraz aplikacji'
+        sh 'docker build -t rafal206/snake-game:${BUILD_NUMBER} .'
       }
     }
 
-    stage('Test') {
-      agent {
-        docker {
-          image 'snake-game:${BUILD_NUMBER}'
-        }
-      }
+    stage('Push Docker Image') {
+      agent any
       steps {
-        echo "=== TEST START ==="
-        sh '''
-          mkdir -p output
-          go test ./snake/... > output/test_log.log 2>&1 || true
-          cat output/test_log.log
-        '''
-        echo "=== TEST END ==="
+        echo 'Wypycham obraz na Docker Hub'
+        sh 'docker push rafal206/snake-game:${BUILD_NUMBER}'
       }
     }
 
     stage('Archive Logs') {
       agent any
       steps {
-        archiveArtifacts artifacts: 'output/*.log', fingerprint: true
+        archiveArtifacts artifacts: '**/test_*.log', fingerprint: true
       }
     }
   }
 
   post {
     always {
-      echo "Pipeline zakończone. Logi dostępne jako artefakty."
+      echo 'Pipeline zakończone. Logi i obraz dostępne.'
     }
   }
 }

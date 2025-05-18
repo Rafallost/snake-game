@@ -27,6 +27,7 @@ pipeline {
         archiveArtifacts artifacts: 'test.log', fingerprint: true
       }
     }
+  }
 
   post {
     always {

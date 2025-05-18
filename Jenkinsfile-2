@@ -1,70 +1,47 @@
 pipeline {
   agent any
+  environment {
+    DOCKER_HOST        = 'tcp://dind:2375'
+    DOCKER_TLS_CERTDIR = ''
+  }
   stages {
-    stage('Build Dependencies Image') {
+    stage('Build deps image') {
       steps {
         dir('docker/dependencies') {
-          // build the "builder" image WITH Go
-          sh 'docker build -t local-dependencies:1.0 .'
+          sh 'docker build -t rafal206/dependencies:1.0 .'
         }
       }
     }
 
-    stage('Compile') {
-      // now use that freshly-built image
+    stage('Compile & Test') {
       agent {
         docker {
-          image 'local-dependencies:1.0'
-          args '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
+          image 'rafal206/dependencies:1.0'
+          args  '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {
-        echo "=== BUILD START ==="
+        // zakładamy, że Makefile w głównym katalogu robi build + testy
         sh 'make build'
+        sh 'go test ./snake/... > test.log'
+        archiveArtifacts artifacts: 'test.log', fingerprint: true
       }
     }
 
-    stage('Build Docker Image') {
-      agent {
-        docker {
-          image 'docker:24.0.2-cli'
-          args '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
-        }
-      }
+    stage('Build & Push Docker Image') {
       steps {
-        echo "Buduję obraz aplikacji w DIND"
-        sh 'docker build -t snake-game:${BUILD_NUMBER} .'
-      }
-    }
-
-    stage('Test') {
-      agent {
-        docker {
-          image 'snake-game:${BUILD_NUMBER}'
-        }
-      }
-      steps {
-        echo "=== TEST START ==="
+        // tutaj już jesteśmy na hoście z dostępem do DIND
         sh '''
-          mkdir -p output
-          go test ./snake/... > output/test_log.log 2>&1 || true
-          cat output/test_log.log
+          docker build -t rafal206/snake-game:${BUILD_NUMBER} .
+          docker push rafal206/snake-game:${BUILD_NUMBER}
         '''
-        echo "=== TEST END ==="
-      }
-    }
-
-    stage('Archive Logs') {
-      agent any
-      steps {
-        archiveArtifacts artifacts: 'output/*.log', fingerprint: true
       }
     }
   }
 
   post {
     always {
-      echo "Pipeline zakończone. Logi dostępne jako artefakty."
+      echo "Koniec pipeline, artefakty i obraz dostępne"
     }
   }
 }

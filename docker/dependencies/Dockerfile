@@ -6,4 +6,5 @@ RUN mkdir -p /go-cache \
  && chown 1000:1000 /go-cache
 
 ENV GOCACHE=/go-cache
+ENV GOFLAGS="-buildvcs=false"
 WORKDIR /app

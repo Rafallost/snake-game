@@ -1,25 +1,16 @@
 pipeline {
   agent any
-  environment {
-    COMPOSE_PROJECT_NAME = "snakeproject"
-  }
 
   stages {
-    stage('Init') {
+    stage('Checkout') {
       steps {
-        sh 'mkdir -p repo_input repo_output'
+        checkout scm
       }
     }
 
-    stage('Checkout') {
+    stage('Prepare') {
       steps {
-        // Pobieramy repo do podkatalogu repo_input
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: '*/master']],
-          userRemoteConfigs: [[url: 'https://github.com/Rafallost/snake-game.git']],
-          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'repo_input']]
-        ])
+        sh 'mkdir -p repo_output'
       }
     }
 
@@ -31,12 +22,14 @@ pipeline {
 
     stage('Run Builder') {
       steps {
+        // logi zapisywane do repo_output/build.log
         sh 'docker-compose run --rm builder'
       }
     }
 
     stage('Run Tester') {
       steps {
+        // logi zapisywane do repo_output/test.log
         sh 'docker-compose run --rm tester'
       }
     }
@@ -56,7 +49,7 @@ pipeline {
 
   post {
     always {
-      echo "Pipeline zakończony – logi dostępne jako artefakty"
+      echo "Pipeline done, artifacts: repo_output/*.log"
     }
   }
 }

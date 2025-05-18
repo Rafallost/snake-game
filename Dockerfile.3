@@ -3,9 +3,14 @@ FROM golang:1.20-alpine
 LABEL maintainer="Twoje Imię <email@domena>"
 
 WORKDIR /app
-RUN apk update && apk add --no-cache make
+RUN apk update && apk add --no-cache git make
 
-VOLUME ["/app/input", "/app/output"]
+# Klonujemy kod
+RUN git clone https://github.com/Rafallost/snake-game.git input
 
-# Uruchamia testy na kodzie w /app/input
-CMD ["sh", "-c", "cd /app/input && make test 2>&1 | tee /app/output/test.log"]
+# Tworzymy output i volume
+RUN mkdir -p /app/output
+VOLUME ["/app/output"]
+
+# Uruchamiamy testy i zapisujemy logi
+CMD ["sh", "-c", "cd input && make test 2>&1 | tee /app/output/test.log"]

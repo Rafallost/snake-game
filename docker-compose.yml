@@ -7,8 +7,7 @@ services:
       dockerfile: Dockerfile.2
     image: snake-builder:1.0
     volumes:
-      - ./repo_input:/app/input   # kod z workspace
-      - ./repo_output:/app/output # miejsce na logi i artefakty
+      - ./repo_output:/app/output   # tylko logi/artefakty
 
   tester:
     build:
@@ -18,5 +17,4 @@ services:
     depends_on:
       - builder
     volumes:
-      - ./repo_input:/app/input
       - ./repo_output:/app/output

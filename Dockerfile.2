@@ -3,10 +3,14 @@ FROM golang:1.20-alpine
 LABEL maintainer="Twoje Imię <email@domena>"
 
 WORKDIR /app
-RUN apk update && apk add --no-cache make
+RUN apk update && apk add --no-cache git make
 
-# Katalogi montowane z hosta
-VOLUME ["/app/input", "/app/output"]
+# Klonujemy kod do katalogu input
+RUN git clone https://github.com/Rafallost/snake-game.git input
 
-# Domyślny punkt wejścia: budowa kodu zamontowanego w /app/input
-CMD ["sh", "-c", "cd /app/input && go build -v -o /app/output/snake 2>&1 | tee /app/output/build.log"]
+# Tworzymy miejsce na output i oznaczamy jako volume
+RUN mkdir -p /app/output
+VOLUME ["/app/output"]
+
+# Budujemy i zapisujemy logi
+CMD ["sh", "-c", "cd input && go build -v -o /app/output/snake 2>&1 | tee /app/output/build.log"]

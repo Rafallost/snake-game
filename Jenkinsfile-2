@@ -15,7 +15,7 @@ pipeline {
       agent {
         docker {
           image 'local-dependencies:1.0'
-          args  args  '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
+          args '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {
@@ -28,7 +28,7 @@ pipeline {
       agent {
         docker {
           image 'docker:24.0.2-cli'
-          args  args  '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
+          args '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {

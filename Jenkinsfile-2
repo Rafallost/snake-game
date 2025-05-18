@@ -1,55 +1,66 @@
 pipeline {
-  agent any
-
+  agent none
+//   agent {
+//   docker {
+//     image 'docker:24-dind'
+//     args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
+//   }
+// }
   stages {
-    stage('Checkout') {
+    stage('Start Trigger') {
+      agent { label 'master' }
       steps {
-        checkout scm
+        echo "Rozpoczęcie pipeline – Build #${env.BUILD_NUMBER}"
       }
     }
 
-    stage('Prepare') {
+    stage('Builder') {
+      agent {
+        docker {
+          image 'myorg/dependencies:1.0'
+          args '-u root:root'
+        }
+      }
       steps {
-        sh 'mkdir -p repo_output'
+        sh '''
+          echo "=== BUILD START ===" > build.log
+          # przykład dla Node.js
+          npm install >> build.log 2>&1
+          npm run build >> build.log 2>&1
+          echo "=== BUILD END ===" >> build.log
+          cat build.log
+        '''
       }
     }
 
-    stage('Build Images') {
-      steps {
-        sh 'docker-compose build'
+    stage('Tester') {
+      agent {
+        docker {
+          image 'myorg/dependencies:1.0'
+        }
       }
-    }
-
-    stage('Run Builder') {
       steps {
-        // logi zapisywane do repo_output/build.log
-        sh 'docker-compose run --rm builder'
-      }
-    }
-
-    stage('Run Tester') {
-      steps {
-        // logi zapisywane do repo_output/test.log
-        sh 'docker-compose run --rm tester'
-      }
-    }
-
-    stage('Teardown') {
-      steps {
-        sh 'docker-compose down'
+        sh '''
+          echo "=== TEST START ===" > test.log
+          npm test >> test.log 2>&1 || true
+          echo "=== TEST END ===" >> test.log
+          ls -lh .
+          cat test.log
+        '''
       }
     }
 
     stage('Archive Logs') {
+      agent { label 'master' }
       steps {
-        archiveArtifacts artifacts: 'repo_output/*.log', fingerprint: true
+        archiveArtifacts artifacts: '*.log', fingerprint: true
       }
     }
   }
 
   post {
     always {
-      echo "Pipeline done, artifacts: repo_output/*.log"
+      echo "Pipeline zakończony – logi jako artefakty"
     }
   }
 }

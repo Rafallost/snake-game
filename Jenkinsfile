@@ -38,6 +38,9 @@ pipeline {
                     echo "=== TEST START ===" > output/test_log.txt
                     make test >> output/test_log.txt 2>&1
                     echo "=== TEST END ===" >> output/test_log.txt
+                    ls -lh output/
+                    cat output/build_log.txt || true
+                    cat output/test_log.txt || true
                 '''
             }
         }

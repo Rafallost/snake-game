@@ -1,3 +1,5 @@
+default: test
+
 build:
 	go build -v -o ./_bin/snake-game
 

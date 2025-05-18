@@ -26,21 +26,22 @@ pipeline {
             steps {
                 sh '''
                     mkdir -p output
-                    echo "=== BUILD START ===" > output/build_log.txt
-                    make build >> output/build_log.txt 2>&1
-                    echo "=== BUILD END ===" >> output/build_log.txt
+                    echo "=== BUILD START ===" > output/build_log.log
+                    make build >> output/build_log.log 2>&1
+                    echo "=== BUILD END ===" >> output/build_log.log
+                    cat output/build_log.log || true
                 '''
             }
         }
         stage('Test') {
             steps {
                 sh '''
-                    echo "=== TEST START ===" > output/test_log.txt
-                    make test >> output/test_log.txt 2>&1
-                    echo "=== TEST END ===" >> output/test_log.txt
+                    echo "=== TEST START ===" > output/test_log.log
+                    make test >> output/test_log.log 2>&1
+                    echo "=== TEST END ===" >> output/test_log.log
                     ls -lh output/
-                    cat output/build_log.txt || true
-                    cat output/test_log.txt || true
+                    
+                    cat output/test_log.log || true
                 '''
             }
         }

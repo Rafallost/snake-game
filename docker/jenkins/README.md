@@ -1,15 +1,8 @@
-docker network create jenkins-net
+# Use below command to build Jenkins
+`docker-compose up -d`
 
-# DIND (jeśli chcesz dedykowany daemon)
-docker run -d --name jenkins-dind \
-  --network jenkins-net \
-  --privileged \
-  docker:24-dind
+# Then you can open Jenkins in browser under http://localhost:8082
+`firefox http://localhost:8082`
 
-# Jenkins
-docker run -d --name jenkins \
-  -p 8080:8080 -p 50000:50000 \
-  --network jenkins-net \
-  -v jenkins_home:/var/jenkins_home \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  docker/jenkins:custom
+# To find password you can use below commands
+`docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword`

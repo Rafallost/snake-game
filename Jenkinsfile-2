@@ -17,7 +17,7 @@ pipeline {
       agent {
         docker {
           image 'rafal206/dependencies:1.0'
-          args  '--privileged -u root -v /var/run/docker.sock:/var/run/docker.sock'
+          args  '--privileged -u root -v /var/run/dockeSr.sock:/var/run/docker.sock'
         }
       }
     steps {
@@ -33,7 +33,7 @@ pipeline {
 
   post {
     always {
-      echo "Koniec pipeline, artefakty i obraz dostępne"
+      echo "End of pipeline, artifacts and image available"
     }
   }
 }

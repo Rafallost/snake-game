@@ -1,3 +1,40 @@
+
+# DND explanation. Blow files strucure regading this build
+
+├── docker
+│   ├── dependencies
+│   │   ├── Dockerfile
+│   │   └── README.md
+│   ├── jenkins
+│   │   ├── docker-compose.yml
+│   │   ├── Dockerfile
+│   │   └── README.md
+│   └── tester
+│       ├── Dockerfile
+│       └── README.md
+├── Jenkinsfile-2
+└── README.md
+
+1. Prerequisites: Install Docker and Docker Compose.
+2. Build Dependencies image:
+    * cd docker/dependencies
+    * docker build -t rafal206/dependencies:1.0 .
+3. Start Jenkins + DIND:
+    * cd docker/jenkins
+    * docker-compose up -d
+4. Retrieve Jenkins initial admin password:
+    * docker exec -it jenkins sh -c 'echo "Initial Admin Password:"; cat /var/jenkins_home/secrets/initialAdminPassword'
+5. Configure Jenkins:
+    * Login to http://localhost:8082
+    * Install suggested plugins and create admin user.
+6. Run pipeline:
+    * In Jenkins, create a new Pipeline job
+    * Point SCM to your repository and set Jenkinsfile-2 as the pipeline script.
+    * Run the job. it will build, test, and push Docker images.
+
+For the more informaction, read rest of the READMEs
+
+# --------------------------------------------------------------------- Legacy part ---------------------------------------------------------------------
 # Snake Game
 
 [![Build Status](https://travis-ci.org/DyegoCosta/snake-game.svg?branch=master)](https://travis-ci.org/DyegoCosta/snake-game)

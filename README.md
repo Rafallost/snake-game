@@ -1,6 +1,7 @@
 
-# DND explanation. Blow files strucure regading this build<br>
+# DND explanation.
 
+Below structure is only for DND
 ├── docker <br>
 │   ├── dependencies<br>
 │   │   ├── Dockerfile<br>
@@ -34,7 +35,7 @@
 
 For the more informaction, read rest of the READMEs
 
-# --------------------------------------------------------------------- Legacy part ---------------------------------------------------------------------
+# ---------------------- Legacy part ----------------------
 # Snake Game
 
 [![Build Status](https://travis-ci.org/DyegoCosta/snake-game.svg?branch=master)](https://travis-ci.org/DyegoCosta/snake-game)

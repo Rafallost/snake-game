@@ -36,13 +36,22 @@ pipeline {
                 sh 'docker tag snake-deploy ${IMAGE_NAME}:${IMAGE_TAG}'
             }
         }
-
         stage('Smoke test') {
             steps {
                 script {
+                    // Build the smoke image first
+                    sh 'docker build -t snake-smoke -f Dockerfile.smoke .'
+
+                    // Run the container in detached mode
                     def containerId = sh(script: 'docker run -d snake-smoke', returnStdout: true).trim()
-                    sleep(time: 5, unit: 'SECONDS') // daj chwilę na wykonanie
+
+                    // Poczekaj chwilę na wykonanie testu
+                    sleep(time: 3, unit: 'SECONDS')
+
+                    // Skopiuj log
                     sh "docker cp ${containerId}:/app/smoke.log ./smoke.log || true"
+
+                    // Usuń kontener
                     sh "docker rm -f ${containerId} || true"
                 }
                 archiveArtifacts artifacts: 'smoke.log'

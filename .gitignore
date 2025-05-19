@@ -21,5 +21,6 @@ _cgo_export.*
 _testmain.go
 
 *.exe
-*.test
+## To dockerfile.test be visible
+#*.test
 *.prof

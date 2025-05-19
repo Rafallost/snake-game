@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                git branch: 'RZ415286', url: 'https://github.com/Rafallost/snake-game.git'
+                git branch: 'master', url: 'https://github.com/Rafallost/snake-game.git'
             }
         }
 

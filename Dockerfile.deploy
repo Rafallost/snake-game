@@ -1,0 +1,17 @@
+# Stage 1 – build
+FROM golang:1.20-alpine as builder
+
+WORKDIR /app
+COPY . .
+RUN go mod tidy && \
+    go build -o snake_bin .
+
+# Stage 2 – deploy
+FROM alpine:3.18
+
+WORKDIR /app
+COPY --from=builder /app/snake_bin /app/snake_bin
+COPY smoke_test.sh /app/smoke_test.sh
+RUN chmod +x /app/smoke_test.sh
+
+CMD ["/app/snake_bin"]

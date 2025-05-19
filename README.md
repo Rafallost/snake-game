@@ -1,19 +1,19 @@
 
-# DND explanation. Blow files strucure regading this build
+# DND explanation. Blow files strucure regading this build<br>
 
-├── docker
-│   ├── dependencies
-│   │   ├── Dockerfile
-│   │   └── README.md
-│   ├── jenkins
-│   │   ├── docker-compose.yml
-│   │   ├── Dockerfile
-│   │   └── README.md
-│   └── tester
-│       ├── Dockerfile
-│       └── README.md
-├── Jenkinsfile-2
-└── README.md
+├── docker <br>
+│   ├── dependencies<br>
+│   │   ├── Dockerfile<br>
+│   │   └── README.md<br>
+│   ├── jenkins<br>
+│   │   ├── docker-compose.yml<br>
+│   │   ├── Dockerfile<br>
+│   │   └── README.md<br>
+│   └── tester<br>
+│       ├── Dockerfile<br>
+│       └── README.md<br>
+├── Jenkinsfile-2<br>
+└── README.md<br>
 
 1. Prerequisites: Install Docker and Docker Compose.
 2. Build Dependencies image:

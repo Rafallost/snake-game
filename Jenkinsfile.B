@@ -17,7 +17,8 @@ pipeline {
             steps {
                 sh 'docker build -t snake-build -f Dockerfile.build .'
                 sh 'docker logs $(docker create snake-build) > build_logs.log || true'
-                archiveArtifacts artifacts: 'build_logs.log'
+                sh 'docker cp $(docker create snake-build):/app/build.log ./build.log'
+                archiveArtifacts artifacts: 'build.log', fingerprint: true
             }
         }
 

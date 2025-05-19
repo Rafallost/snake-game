@@ -26,6 +26,7 @@ pipeline {
             steps {
                 sh 'docker build -t snake-test -f Dockerfile.test .'
                 sh 'docker run --rm snake-test > test_logs.log || true'
+                sh 'docker cp $(docker create snake-test):/app/test_results.txt ./test_logs.log'
                 archiveArtifacts artifacts: 'test_logs.log'
             }
         }
@@ -39,19 +40,10 @@ pipeline {
         stage('Smoke test') {
             steps {
                 script {
-                    // Build the smoke image first
                     sh 'docker build -t snake-smoke -f Dockerfile.smoke .'
-
-                    // Run the container in detached mode
                     def containerId = sh(script: 'docker run -d snake-smoke', returnStdout: true).trim()
-
-                    // Poczekaj chwilę na wykonanie testu
                     sleep(time: 3, unit: 'SECONDS')
-
-                    // Skopiuj log
                     sh "docker cp ${containerId}:/app/smoke.log ./smoke.log || true"
-
-                    // Usuń kontener
                     sh "docker rm -f ${containerId} || true"
                 }
                 archiveArtifacts artifacts: 'smoke.log'

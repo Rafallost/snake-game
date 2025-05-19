@@ -1,10 +1,5 @@
-FROM golang:1.20-alpine
+FROM snake-build as builder
 
 WORKDIR /app
-COPY . .
-
-## test
-RUN go mod tidy && \
-    go test -v ./... > test_results.txt
-
+RUN go test -v ./... > test_results.txt
 CMD ["cat", "test_results.txt"]

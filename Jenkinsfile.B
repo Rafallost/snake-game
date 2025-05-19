@@ -39,8 +39,13 @@ pipeline {
 
         stage('Smoke test') {
             steps {
-                sh 'docker run --rm ${IMAGE_NAME}:${IMAGE_TAG} > smoke_test.log || true'
-                archiveArtifacts artifacts: 'smoke_test.log'
+                script {
+                    def containerId = sh(script: 'docker run -d snake-smoke', returnStdout: true).trim()
+                    sleep(time: 5, unit: 'SECONDS') // daj chwilę na wykonanie
+                    sh "docker cp ${containerId}:/app/smoke.log ./smoke.log || true"
+                    sh "docker rm -f ${containerId} || true"
+                }
+                archiveArtifacts artifacts: 'smoke.log'
             }
         }
 

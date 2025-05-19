@@ -1,0 +1,4 @@
+FROM rafal206/snake-game:v1.0.0
+COPY smoke_test.sh /app/smoke_test.sh
+RUN chmod +x /app/smoke_test.sh
+CMD ["/app/smoke_test.sh"]

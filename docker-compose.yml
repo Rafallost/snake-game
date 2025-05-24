@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.build
+    image: snake-build
     container_name: snake-build
 
   test:

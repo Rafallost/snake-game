@@ -5,4 +5,4 @@ COPY . .
 
 RUN go mod tidy && go build -v -o snake_bin . > build.log 2>&1
 
-CMD ["./snake_bin"]
+CMD ["cat", "build.log"]

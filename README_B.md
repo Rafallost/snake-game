@@ -15,6 +15,9 @@
 # Configure Jenkins, create pipeline. Remember about credentials dockerhub-creds to dockerhub
 6. firefox http://localhost:8082
 
+# To run game docker
+* docker run -ti rafal206/snake-game
+
 # Project Structure
 * Dockerfile.build – an image to build the application
 * Dockerfile.test – an image to run tests

@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'rafal206/snake-game'
-        IMAGE_TAG = 'v1.0.0'
+        IMAGE_TAG = 'v1.0.1'
     }
 
     stages {

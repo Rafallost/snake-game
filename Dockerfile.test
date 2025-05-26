@@ -1,4 +1,4 @@
-FROM snake-game-build as builder
+FROM snake-build as builder
 
 WORKDIR /app
 RUN go test -v ./... > test_results.txt
